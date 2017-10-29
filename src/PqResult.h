@@ -299,6 +299,11 @@ private:
         types.push_back(PGVector);
         break;
 
+      case 16391: // Postgis planar coordinates (geometry)
+      case 16987: // Postgis ellipsoidal coordinates (geography)
+        types.push_back(PGWKB);
+        break;
+
       default:
         types.push_back(PGString);
         Rcpp::warning("Unknown field type (%s) in column %s", type, PQfname(pSpec_, i));

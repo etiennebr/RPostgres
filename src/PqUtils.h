@@ -21,6 +21,7 @@ enum PGTypes {
   PGString = STRSXP,
   PGLogical = LGLSXP,
   PGVector = VECSXP,
+  PGWKB = STRSXP,
 };
 
 Rcpp::List inline dfResize(Rcpp::List df, int n) {
