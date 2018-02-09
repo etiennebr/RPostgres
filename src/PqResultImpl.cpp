@@ -46,6 +46,7 @@ PqResultImpl::~PqResultImpl() {
 PqResultImpl::_cache::_cache(PGresult* spec) :
   names_(get_column_names(spec)),
   types_(get_column_types(spec)),
+  typeoids_(get_column_typeoids(spec)),
   ncols_(names_.size()),
   nparams_(PQnparams(spec))
 {
@@ -73,7 +74,6 @@ std::vector<DATA_TYPE> PqResultImpl::_cache::get_column_types(PGresult* spec)  {
 
   for (int i = 0; i < ncols_; ++i) {
     Oid type = PQftype(spec, i);
-    // SELECT oid, typname FROM pg_type WHERE typtype = 'b'
     switch (type) {
     case 20: // BIGINT
       types.push_back(DT_INT64);
@@ -128,17 +128,22 @@ std::vector<DATA_TYPE> PqResultImpl::_cache::get_column_types(PGresult* spec)  {
       types.push_back(DT_BLOB);
       break;
 
-    case 705: // UNKNOWN
-      types.push_back(DT_STRING);
-      break;
-
     default:
       types.push_back(DT_STRING);
-      warning("Unknown field type (%d) in column %s", type, PQfname(spec, i));
     }
   }
 
   return types;
+}
+
+std::vector<Oid> PqResultImpl::_cache::get_column_typeoids(PGresult* spec)  {
+  std::vector<Oid> typeoids;
+  int ncols_ = PQnfields(spec);
+  typeoids.reserve(ncols_);
+
+  for (int i = 0; i < ncols_; ++i) typeoids.push_back(PQftype(spec, i));
+
+  return typeoids;
 }
 
 PGresult* PqResultImpl::prepare(PGconn* conn, const std::string& sql) {
@@ -227,6 +232,7 @@ List PqResultImpl::fetch(const int n_max) {
 }
 
 List PqResultImpl::get_column_info() {
+  std::cerr << "entering get_column_info" << std::endl;
   peek_first_row();
 
   CharacterVector names(cache.names_.begin(), cache.names_.end());

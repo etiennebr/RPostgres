@@ -45,6 +45,7 @@ List DbDataFrame::get_data() {
 }
 
 List DbDataFrame::get_data(std::vector<DATA_TYPE>& types_) {
+  std::cerr << "entering get_data" << std::endl;
   // Trim back to what we actually used
   finalize_cols();
 
@@ -57,6 +58,7 @@ List DbDataFrame::get_data(std::vector<DATA_TYPE>& types_) {
   out.attr("names") = names;
   out.attr("class") = "data.frame";
   out.attr("row.names") = IntegerVector::create(NA_INTEGER, -i);
+  out.attr("typnames") = "my_type";
   return out;
 }
 
